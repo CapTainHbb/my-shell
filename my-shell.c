@@ -12,7 +12,7 @@ int main() {
     while (1)  // main loop
     {
         printf("please enter a command> ");
-         scanf("%[^\n]",user_input);
+        scanf("%[^\n]",user_input);
         child = fork();
         if (-1 == child)
         {
@@ -20,12 +20,13 @@ int main() {
         }
         else if(0 == child) {  // parent process
             wait(&status);
+            return 0;
         }
         else  // child process
         {
             command_handler(user_input);
+            return 0;
         }
-        break;
     }
     
     return 0;
