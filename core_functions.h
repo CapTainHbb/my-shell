@@ -5,4 +5,4 @@ void lsdir_command();
 void rename_command();
 void exit_command();
 void redirect_command();
-void cd_command();
+void cd_command(int number_of_token);

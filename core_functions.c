@@ -4,14 +4,20 @@
 #include <stdlib.h>
 #include "core_functions.h"
 
-static char* tokenized_user_input[32];
+char* tokenized_user_input[32];
+char* current_dir = "~";
 
 void ls_command() {
     execv("/bin/ls", (char *[]){ "/bin/ls", "-l", NULL });
 }
 
-void cd_command() {
+void cd_command(int number_of_tokens) {
+    if(number_of_tokens > 2){
+        perror("illegal number of arguments!\n");
+        return;
+    }
 
+    execv("cd", (char *[]){ "cd", tokenized_user_input[1], NULL });
 }
 
 void command_handler(char* user_input) {
@@ -23,11 +29,10 @@ void command_handler(char* user_input) {
         p = strtok(NULL, " "); //  gets the next token from the string it was previously tokenizing.
     }
     
-
     if(tokenized_user_input[0] == "ls")
         ls_command();
     else if(tokenized_user_input[0] == "cd")
-        cd_command();
+        cd_command(i);
 
     return;
     
