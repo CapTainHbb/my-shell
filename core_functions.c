@@ -29,7 +29,7 @@ void command_handler(char* user_input) {
     else if(tokenized_user_input[0] == "cd")
         cd_command();
 
-
+    return;
     
 }
 

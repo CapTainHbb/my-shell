@@ -18,14 +18,14 @@ int main() {
         {
             perror("can't create child!\n");
         }
-        else if(0 == child) {  // parent process
-            wait(&status);
-            return 0;
-        }
-        else  // child process
-        {
+        else if(0 == child) {  // child process
             command_handler(user_input);
             return 0;
+        }
+        else  // parent process
+        {
+            wait(&status);
+            
         }
     }
     
