@@ -7,6 +7,10 @@
 char* tokenized_user_input[32];
 char* current_dir = "~";
 
+void remove_newlines(char** str) {
+    
+}
+
 void ls_command() {
     execv("/bin/ls", (char *[]){ "/bin/ls", "-l", NULL });
 }
@@ -29,8 +33,12 @@ void command_handler(char* user_input) {
         p = strtok(NULL, " "); //  gets the next token from the string it was previously tokenizing.
     }
     
-    if(tokenized_user_input[0] == "ls")
+    remove_newlines()
+
+    if(tokenized_user_input[0] == "ls" || tokenized_user_input[0] == "ls\n") {
+
         ls_command();
+    }
     else if(tokenized_user_input[0] == "cd")
         cd_command(i);
 
