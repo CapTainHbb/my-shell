@@ -6,4 +6,4 @@ void rename_command();
 void exit_command();
 void redirect_command();
 void cd_command(int number_of_token);
-void remove_newlines(char** str);
+void strip_string(char** str);
