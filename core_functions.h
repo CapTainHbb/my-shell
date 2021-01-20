@@ -1,4 +1,4 @@
-void command_handler(char *);
+void command_handler();
 void clear_screen_command();
 void ls_command();
 void lsdir_command();
@@ -7,3 +7,4 @@ void exit_command();
 void redirect_command();
 void cd_command(int number_of_token);
 void strip_string(char** str);
+int tokenize_user_input(char* user_input);

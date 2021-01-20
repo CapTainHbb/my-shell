@@ -2,10 +2,10 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #include "core_functions.h"
 
-char* tokenized_user_input[32] = { [0 ... 31] = NULL};
-char* current_dir;
+extern char* tokenized_user_input[32];
 
 void strip_string(char** str) {
 
@@ -26,52 +26,47 @@ void strip_string(char** str) {
     
 }
 
-void ls_command() {
-    execv("/bin/ls", tokenized_user_input);
-
-}
-
-void cd_command(int number_of_tokens) {
-    if(number_of_tokens > 2){
-        printf("illegal number of arguments!\n");
-        return;
-    }
-    char prev_dir[64];
-    strcpy(prev_dir, current_dir);
-    strcpy(current_dir, tokenized_user_input[1]);
-    if(-1 == execv("/bin/bash", (char *[]){ "cd", tokenized_user_input[1], NULL })) {
-        strcpy(current_dir, prev_dir);
-    }
-}
-
-void command_handler(char* user_input) {
+int tokenize_user_input(char* user_input) {
     char* p = strtok(user_input,  " ");
     int i = 0;
     while(p != NULL) {
         tokenized_user_input[i++] = p;
         p = strtok(NULL, " "); //  gets the next token from the string it was previously tokenizing.
     }
-
+    
     tokenized_user_input[i] = NULL;
     
     strip_string(tokenized_user_input);
+    
+    return i;
+}
 
-    // int u = 0;/////////////////////////////////////
-    // while (tokenized_user_input[u] != NULL)//////////////////
-    //     printf("tok: %s\t\n", tokenized_user_input[u++]);////////////////
-    // return;////////////////////////
+void ls_command() {
+    execv("/bin/ls", tokenized_user_input);
+}
 
+void cd_command(int number_of_tokens) {
+    if(number_of_tokens != 2){
+        perror("illegal number of arguments!\n");
+        return;
+    }
+    if(chdir(tokenized_user_input[1]) != -1) {
+
+    }  
+}
+
+void clear_screen() {
+    execv("/bin/clear", (char*[]){"clear", NULL});
+}
+
+void command_handler() {
+    
     if(!strcmp(tokenized_user_input[0], "ls")) {
         ls_command();
     }
-    else if(!strcmp(tokenized_user_input[0] , "cd")) {
-        cd_command(i);
+    else if(!strcmp(tokenized_user_input[0], "clear")) {
+        clear_screen();
     }
-    else 
-    {
-        return;
-    }
-    
     return;
     
 }
