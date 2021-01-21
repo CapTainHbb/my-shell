@@ -40,6 +40,8 @@ make clean
 example:
 
 please enter a command>(/) ls
+
 bin   cdrom  etc   lib    lib64   lost+found  mnt   root  sbin  srv  tmp  var
+
 boot  dev    home  lib32  libx32  media       proc  run   snap  sys  usr
 
