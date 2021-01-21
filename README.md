@@ -8,6 +8,7 @@ this linux shell supports following commands:
 *rm
 
 *mv
+
 *clear
 
 *tail
@@ -21,6 +22,7 @@ this linux shell supports following commands:
 *ls
 
 *lsdir (list only directories)
+
 *rename (usage: rename oldname newname)
 
 also you can use pipelining!:
