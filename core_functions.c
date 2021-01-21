@@ -1,12 +1,19 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <signal.h>
+#include <wait.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <sys/types.h>
 #include <errno.h>
+#include <sys/stat.h>
 #include "core_functions.h"
 
 extern char* tokenized_user_input[32];
 extern size_t user_input_size;
+extern pid_t child;
+extern int signal_occured;
 
 void strip_string(char** str) {
 
@@ -42,18 +49,45 @@ int tokenize_user_input(char* user_input) {
     return i;
 }
 
+void pipe_line_command(char* command_name) {
+    pid_t ch;
+            int fds[2];
+            pipe(fds);
+            ch = fork();
+            if (-1 == ch)
+            {
+                printf("can't create child process!\n");
+            }
+            else if (0 == ch) // in child
+            {
+                close(fds[0]);
+                dup2(fds[1], STDOUT_FILENO);
+                execl("/bin/cat", "cat", tokenized_user_input[1], NULL);
+            }
+            else // in parent
+            {
+                wait(NULL);
+                char* buf = (char*)malloc(4096 * sizeof(char));
+                close(fds[1]);
+                dup2(fds[0], STDIN_FILENO);
+                int file = open(tokenized_user_input[3], O_WRONLY | O_CREAT, S_IRWXU);
+                read(fds[0], buf, 4096);
+                write(file, buf, 4096);
+                free(buf);
+                close(file);
+            }
+}
+
 void ls_command() {
     execv("/bin/ls", tokenized_user_input);
 }
 
-void cd_command(int number_of_tokens) {
-    if(number_of_tokens != 2){
+void cd_command() {
+    if(user_input_size != 2){
         printf("illegal number of arguments!\n");
         return;
     }
-    if(chdir(tokenized_user_input[1]) != -1) {
-
-    }  
+    chdir(tokenized_user_input[1]);  
 }
 
 void clear_screen() {
@@ -78,152 +112,36 @@ void rename_command() {
         printf("illegal number of arguments!\n");
         return;
     }
-    if(-1 == rename(tokenized_user_input[1], tokenized_user_input[2])) {
-        switch (errno)
-        {
-            case ENOENT:
-                printf("one or two of input files does not exist!\n");
-                break;
-            case EPERM:
-                printf("permission denied!!\n");
-                break;
-            default:
-                printf("cant perform this task\n");
-                break;
-        }
-    }     
+    rename(tokenized_user_input[1], tokenized_user_input[2]);    
 }
 
 void remove_command() {
-    if (user_input_size != 2)
-    {
-        printf("illegal number of arguments!\n");
-        return;
-    }
-    if(-1 == remove(tokenized_user_input[1])) {
-        switch (errno)
-        {
-            case ENOENT:
-                printf("file %s does not exist!\n", tokenized_user_input[1]);
-                break;
-            case EPERM:
-                printf("permission denied!!\n");
-                break;
-            default:
-                printf("cant perform this task\n");
-                break;
-        }
-    }     
+    execv("/bin/rm", tokenized_user_input);     
 }
 
 void move_command() {
-    if (user_input_size != 3)
-    {
-        printf("illegal number of arguments!\n");
-        return;
-    }
-    if(-1 == execl("/bin/mv", "mv", tokenized_user_input[1], tokenized_user_input[2], NULL)) {
-        switch (errno)
-        {
-            case ENOENT:
-                printf("one provided file does not exist!\n");
-                break;
-            case EPERM:
-                printf("permission denied!!\n");
-                break;
-            default:
-                printf("cant perform this task\n");
-                break;
-        }
-    } 
+    execv("/bin/mv", tokenized_user_input); 
 }
 
-void copy_command(){
+void copy_command() {
     if (user_input_size != 3)
     {
         printf("illegal number of arguments!\n");
         return;
     }
-    if(-1 == execl("/bin/cp", "cp", tokenized_user_input[1], tokenized_user_input[2], NULL)) {
-        switch (errno)
-        {
-            case ENOENT:
-                printf("one provided file does not exist!\n");
-                break;
-            case EPERM:
-                printf("permission denied!!\n");
-                break;
-            default:
-                printf("cant perform this task\n");
-                break;
-        }
-    } 
+    execl("/bin/cp", "cp", tokenized_user_input[1], tokenized_user_input[2], NULL);
 }
 
 void cat_command() {
-    if (user_input_size != 2)
-    {
-        printf("illegal number of arguments!\n");
-        return;
-    }
-    if(-1 == execl("/bin/cat", "cat", tokenized_user_input[1], NULL)) {
-        switch (errno)
-        {
-            case ENOENT:
-                printf("file %s does not exist!\n", tokenized_user_input[1]);
-                break;
-            case EPERM:
-                printf("permission denied!!\n");
-                break;
-            default:
-                printf("cant perform this task\n");
-                break;
-        }
-    } 
+        execv("/bin/cat", tokenized_user_input);
 }
 
 void head_command(){
-    if (user_input_size != 2)
-    {
-        printf("illegal number of arguments!\n");
-        return;
-    }
-    if(-1 == execl("/bin/head", "head", tokenized_user_input[1], NULL)) {
-        switch (errno)
-        {
-            case ENOENT:
-                printf("file %s does not exist!\n", tokenized_user_input[1]);
-                break;
-            case EPERM:
-                printf("permission denied!!\n");
-                break;
-            default:
-                printf("cant perform this task\n");
-                break;
-        }
-    } 
+    execv("/bin/head", tokenized_user_input);
 }
 
 void tail_command(){
-    if (user_input_size != 2)
-    {
-        printf("illegal number of arguments!\n");
-        return;
-    }
-    if(-1 == execl("/bin/tail", "tail", tokenized_user_input[1], NULL)) {
-        switch (errno)
-        {
-            case ENOENT:
-                printf("file %s does not exist!\n", tokenized_user_input[1]);
-                break;
-            case EPERM:
-                printf("permission denied!!\n");
-                break;
-            default:
-                printf("cant perform this task\n");
-                break;
-        }
-    } 
+    execv("/bin/tail", tokenized_user_input); 
 }
 
 void command_handler() {
@@ -267,5 +185,19 @@ void command_handler() {
     
 }
 
+void signal_handler(int signum) {
+    
+    signal_occured = 1;
+    if (0 != child) {
+        kill(child, SIGKILL);
+        printf("\n[*] process with pid: %d terminated\n", child);
+    }
+    else
+    {
+        printf("\n[*] nothing to terminate!\n");
+    }
+    
+         
+}
 
 

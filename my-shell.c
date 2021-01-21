@@ -5,23 +5,33 @@
 #include <sys/types.h>
 #include <string.h>
 #include <errno.h>
+#include <signal.h>
 #include "core_functions.h"
 
 char* tokenized_user_input[32] = { [0 ... 31] = NULL};
 size_t user_input_size;
+pid_t child = 0;
+int signal_occured = 0;
+
 
 int main() {
-    pid_t child;
     int pipe_fds[2], status, error_code;
     size_t buffer_size = 512;
     char* user_input = (char*)malloc(buffer_size * sizeof(char));
     char* current_dir= (char*)malloc(buffer_size * sizeof(char));
-    
+    signal(SIGINT, signal_handler);
+
     while (1)  // main loop
     {   
         getcwd(current_dir, buffer_size); // update current working directory
         printf("please enter a command>(%s) ", current_dir);
         getline(&user_input, &buffer_size, stdin);
+        if (1 == signal_occured) {
+            signal_occured = 0;
+            continue;
+        }
+            
+        
         user_input_size = tokenize_user_input(user_input);
         
         if (!strcmp(tokenized_user_input[0], "exit"))
@@ -63,6 +73,7 @@ int main() {
                 }
                 else {  // parent process
                     wait(&status);
+                    child = 0;
                 }
         }
     }
