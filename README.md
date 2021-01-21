@@ -1,7 +1,7 @@
 # my-shell
 simple linux shell created by captainhb
 
-this linux shell supports following commands:
+this linux shell supports following commands:\n
 *cat
 *rm
 *mv
