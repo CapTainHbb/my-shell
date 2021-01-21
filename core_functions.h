@@ -17,4 +17,5 @@ void cat_command();
 void head_command();
 void tail_command();
 void signal_handler(int signum);
-void pipe_line_command();
+void pipe_line_command(int pipe_line_index);
+int get_pipeline_index();

@@ -15,6 +15,17 @@ extern size_t user_input_size;
 extern pid_t child;
 extern int signal_occured;
 
+int get_pipeline_index() {
+    int i = 0;
+    while (tokenized_user_input[i] != NULL){
+        if(!strcmp(tokenized_user_input[i], ">")) 
+            return i;
+        i++;
+    }
+        
+    return -1;
+}
+
 void strip_string(char** str) {
 
     int j = 0;
@@ -49,7 +60,7 @@ int tokenize_user_input(char* user_input) {
     return i;
 }
 
-void pipe_line_command(char* command_name) {
+void pipe_line_command(int pipe_line_index) {
     pid_t ch;
             int fds[2];
             pipe(fds);
@@ -62,28 +73,64 @@ void pipe_line_command(char* command_name) {
             {
                 close(fds[0]);
                 dup2(fds[1], STDOUT_FILENO);
-                execl("/bin/cat", "cat", tokenized_user_input[1], NULL);
+
+                char* args[32] = { [0 ... 31] = NULL };
+                for (int i = 0; i < pipe_line_index; i++)
+                    args[i] = tokenized_user_input[i];
+                
+                if(!strcmp(tokenized_user_input[0], "ls")) {
+                    execv("/bin/ls", args);       
+                }
+                else if(!strcmp(tokenized_user_input[0], "lsdir")) {
+                    if (user_input_size == 3)
+                        execl("/bin/find", "find", ".", "-maxdepth",  "1", "-type", "d", "-name", tokenized_user_input[0], NULL);
+                    else if(user_input_size == 4)
+                        execl("/bin/find", "find", ".", "-maxdepth",  "1", "-type", "d", NULL);
+                }
+                else if(!strcmp(tokenized_user_input[0], "cat")) {
+                    execv("/bin/cat", args);
+                }
+                else if(!strcmp(tokenized_user_input[0], "head")) {
+                   execv("/bin/head", args);
+                }
+                else if(!strcmp(tokenized_user_input[0], "tail")) {
+                    execv("/bin/tail", args);
+                }                
             }
             else // in parent
             {
                 wait(NULL);
                 char* buf = (char*)malloc(4096 * sizeof(char));
+                memset(buf, '\0', 4096);
                 close(fds[1]);
                 dup2(fds[0], STDIN_FILENO);
-                int file = open(tokenized_user_input[3], O_WRONLY | O_CREAT, S_IRWXU);
-                read(fds[0], buf, 4096);
-                write(file, buf, 4096);
-                free(buf);
-                close(file);
+
+                FILE* file = fopen(tokenized_user_input[user_input_size - 1], "w");
+                while (NULL != fgets(buf, sizeof(buf), stdin))
+                {
+                    fprintf(file, buf);
+                }
+                fclose(file);
             }
 }
 
 void ls_command() {
-    execv("/bin/ls", tokenized_user_input);
+    int index = get_pipeline_index();
+    if (-1 == index)
+    {
+        execv("/bin/ls", tokenized_user_input);
+    }
+    else
+    {
+        if (index != (user_input_size - 2))
+            printf("'>' posistion is wrong!\n");
+        else
+            pipe_line_command(index);
+    }
 }
 
 void cd_command() {
-    if(user_input_size != 2){
+    if(user_input_size != 2) {
         printf("illegal number of arguments!\n");
         return;
     }
@@ -91,19 +138,33 @@ void cd_command() {
 }
 
 void clear_screen() {
+    if (1 != user_input_size)
+    {
+        printf("illegal number of arguments!\n");
+        return;
+    }
     execv("/bin/clear", (char*[]){"clear", NULL});
 }
 
 void lsdir_command() {
-    if (user_input_size > 2)
+
+    int index = get_pipeline_index();
+    if (-1 == index)
     {
-        printf("illegar number of arguments!\n");
-        return;
+        if (user_input_size == 2)
+            execl("/bin/find", "find", ".", "-maxdepth",  "1", "-type", "d", "-name", tokenized_user_input[1], NULL);
+        else if(user_input_size == 1)
+            execl("/bin/find", "find", ".", "-maxdepth",  "1", "-type", "d", NULL);
     }
-    else if (user_input_size == 2)
-        execl("/bin/find", "find", ".", "-maxdepth",  "1", "-type", "d", "-name", tokenized_user_input[1], NULL);
-    else if(user_input_size == 1)
-        execl("/bin/find", "find", ".", "-maxdepth",  "1", "-type", "d", NULL);
+    else
+    {
+        if (index != (user_input_size - 2))
+            printf("'>' posistion is wrong!\n");
+        else
+            pipe_line_command(index);
+    }
+    
+        
 }
 
 void rename_command() {
@@ -133,15 +194,49 @@ void copy_command() {
 }
 
 void cat_command() {
+    int index = get_pipeline_index();
+    if (-1 == index)
+    {
         execv("/bin/cat", tokenized_user_input);
+    }
+    else
+    {
+        if (index != (user_input_size - 2))
+            printf("'>' posistion is wrong!\n");
+        else
+            pipe_line_command(index);
+    }
 }
-
+        
 void head_command(){
-    execv("/bin/head", tokenized_user_input);
+    int index = get_pipeline_index();
+    if (-1 == index)
+    {
+        execv("/bin/head", tokenized_user_input);
+    }
+    else
+    {
+        if (index != (user_input_size - 2))
+            printf("'>' posistion is wrong!\n");
+        else
+            pipe_line_command(index);
+    }
+    
 }
 
 void tail_command(){
-    execv("/bin/tail", tokenized_user_input); 
+    int index = get_pipeline_index();
+    if (-1 == index)
+    {
+        execv("/bin/tail", tokenized_user_input);
+     }
+    else
+    {
+         if (index != (user_input_size - 2))
+             printf("'>' posistion is wrong!\n");
+         else
+             pipe_line_command(index);
+    }
 }
 
 void command_handler() {
@@ -196,8 +291,6 @@ void signal_handler(int signum) {
     {
         printf("\n[*] nothing to terminate!\n");
     }
-    
-         
 }
 
 

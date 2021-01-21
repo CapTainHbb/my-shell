@@ -31,7 +31,6 @@ int main() {
             continue;
         }
             
-        
         user_input_size = tokenize_user_input(user_input);
         
         if (!strcmp(tokenized_user_input[0], "exit"))
