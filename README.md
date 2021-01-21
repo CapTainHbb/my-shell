@@ -8,7 +8,6 @@ this linux shell supports following commands:
 *rm
 
 *mv
-
 *clear
 
 *tail
