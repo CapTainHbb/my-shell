@@ -1,16 +1,26 @@
 # my-shell
 simple linux shell created by captainhb
 
-this linux shell supports following commands:\n
+this linux shell supports following commands:
+
 *cat
+
 *rm
+
 *mv
+
 *clear
+
 *tail
+
 *head
+
 *cp
+
 *cd
+
 *ls
+
 *lsdir (list only directories)
 *rename (usage: rename oldname newname)
 
