@@ -27,7 +27,7 @@ this linux shell supports following commands:
 
 also you can use pipelining!:
 
-`
+``
 command1 > command2
 
 to install this shell simple type:
