@@ -26,9 +26,9 @@ this linux shell supports following commands:
 *rename (usage: rename oldname newname)
 
 also you can use pipelining!:
-
+‍‍‍‍‍‍‍```
 command1 > command2
-
+```
 to install this shell simple type:
 
 make
