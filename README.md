@@ -29,20 +29,20 @@ also you can use pipelining!:
 
 ```
 command1 > command2
-
+```
 to install this shell simple type:
-
+```
 make
 ```
 to remove installed files:
-
+```
 make clean
-
+```
 example:
-
+```
 please enter a command>(/) ls
 
 bin   cdrom  etc   lib    lib64   lost+found  mnt   root  sbin  srv  tmp  var
 
 boot  dev    home  lib32  libx32  media       proc  run   snap  sys  usr
-
+```
