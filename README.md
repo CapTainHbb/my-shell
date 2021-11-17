@@ -33,7 +33,7 @@ command1 > command2
 to install this shell simple type:
 
 make
-
+```
 to remove installed files:
 
 make clean
